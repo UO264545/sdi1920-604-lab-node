@@ -27,4 +27,11 @@ module.exports = function(app) {
             'Género: ' + req.params.genero;
       res.send(respuesta);
   });
+
+  app.post("/cancion", function(req, res) {
+      res.send("Canción agregada: " + req.body.nombre + "<br>"
+          + " género: " + req.body.genero + "<br>"
+          + " precio: " + req.body.precio);
+  });
+
 };

@@ -93,6 +93,11 @@ require("./routes/rusuarios.js")(app, swig, gestorBD);
 require("./routes/rcanciones.js")(app, swig, gestorBD);
 require("./routes/rautores.js")(app, swig);
 require("./routes/rcomentarios.js")(app, swig, gestorBD);
+
+app.get('/', function (req, res) {
+    res.redirect('/tienda');
+})
+
 // lanzar el servidor
 app.listen(8081, function() {
     console.log("Servidor activo");

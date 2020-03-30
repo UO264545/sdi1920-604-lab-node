@@ -121,12 +121,16 @@ module.exports = function(app, swig, gestorBD) {
                   if(comentarios == null)
                       res.send(respuesta);
                   else {
-                      let respuesta = swig.renderFile('views/bcancion.html',
-                          {
-                              cancion : canciones[0],
-                              comentarios : comentarios
-                          });
-                      res.send(respuesta);
+                      gestorBD.obtenerCompras({ "usuario" :  req.session.usuario, "cancionId" : canciones[0]._id  }, function(obtenida){
+                          let respuesta = swig.renderFile('views/bcancion.html',
+                              {
+                                  cancion : canciones[0],
+                                  comentarios : comentarios,
+                                  usuario : req.session.usuario,
+                                  obtenida : obtenida[0] != null
+                              });
+                          res.send(respuesta);
+                      });
                   }
               });
           }

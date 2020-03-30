@@ -9,7 +9,10 @@ module.exports = function(app, swig, gestorBD) {
 
         gestorBD.insertarComentario(comentario, function(id) {
             if (id == null) {
-                res.send("Error al insertar comentario");
+                res.send(swig.renderFile('views/error.html',
+                    {
+                        error : "Error al insertar comentario"
+                    }));
             } else {
                 res.send("Agregado comentario con id " + id);
             }

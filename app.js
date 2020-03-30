@@ -150,7 +150,9 @@ app.use(function(err, req, res, next){
     console.log("Error producido: " + err);
     if(! res.headersSent) {
         res.status(400);
-        res.send("Recurso no disponible");
+        res.send(swig.renderFile("views/error.html", {
+            error: "Recurso no disponible"
+        }));
     }
 });
 

@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="/js/cookie.js"></script>
 </head>
 <body>
 
@@ -40,7 +41,22 @@
   <script>
     var token;
     var URLbase = "https://localhost:8081/api";
+
     $( "#contenedor-principal" ).load( "widget-login.html");
+
+    if ( Cookies.get('token') != null ){
+      token = Cookies.get('token');
+      var url = new URL(window.location.href);
+      var w = url.searchParams.get("w");
+      if ( w == "login"){
+        $( "#contenedor-principal" ).load("widget-login.html");
+      }
+      if ( w == "canciones"){
+        $( "#contenedor-principal" ).load("widget-canciones.html");
+      }
+
+      $( "#contenedor-principal" ).load( "widget-canciones.html");
+    }
   </script>
 
 </body>
@@ -60,16 +76,23 @@
         success: function(respuesta) {
           console.log(respuesta.token);
           token = respuesta.token;
+          Cookies.set('token', respuesta.token);
           $("#contenedor-principal").load("widget-canciones.html");
         },
         error: function(error) {
+          Cookies.remove('token');
           $("#widget-login")
                   .prepend("<div class='alert alert-danger'>Usuario no encontrado</div>");
         }
       });
     });
   } );
+
   function widgetCanciones(){
     $( "#contenedor-principal" ).load( "widget-canciones.html");
+  }
+
+  function widgetAgregar() {
+    $( "#contenedor-principal" ).load( "widget-agregar.html");
   }
 </script>

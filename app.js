@@ -2,6 +2,9 @@
 let express = require('express');
 let app = express();
 
+let rest = require('request');
+app.set('rest',rest);
+
 let fs = require('fs');
 let https = require('https');
 

@@ -30,6 +30,22 @@ module.exports = function(app, gestorBD) {
     });
 
     app.delete("/api/cancion/:id", function(req, res) {
+        // Comprobar usuario
+        var token = req.headers['token'] || req.body.token || req.query.token;
+        let user;
+        if (token != null) {
+            // verificar el token
+            app.get('jwt').verify(token, 'secreto', function(err, infoToken) {
+                user = infoToken.usuario;
+            });
+        }
+        let valido;
+        gestorBD.obtenerCanciones({ "_id" : gestorBD.mongo.ObjectID(req.params.id), "autor": user }, function(canciones) {
+            valido = check(canciones.length > 0, "Usted no puede eliminar esta canción", res);
+        })
+        if(!valido)
+            return;
+
         var criterio = { "_id" : gestorBD.mongo.ObjectID(req.params.id)}
 
         gestorBD.eliminarCancion(criterio,function(canciones){
@@ -53,6 +69,19 @@ module.exports = function(app, gestorBD) {
         }
         // ¿Validar nombre, genero, precio?
 
+        if(!check(cancion.nombre != null && cancion.nombre.length > 0, "Debe especificarse un nombre", res))
+            return;
+        if(!check(req.body.nombre.length >= 5, "El nombre debe tener una longitud mayor de 5.", res))
+            return;
+
+        if(!check(req.body.genero != null && cancion.genero.length > 0, "Debe especificarse un género", res))
+            return;
+
+        if(!check(req.body.precio != null, "Debe especificarse un precio", res))
+            return;
+        if(!check(req.body.precio > 0, "El precio debe ser positivo.", res))
+            return;
+
         gestorBD.insertarCancion(cancion, function(id){
             if (id == null) {
                 res.status(500);
@@ -72,20 +101,45 @@ module.exports = function(app, gestorBD) {
 
     app.put("/api/cancion/:id", function(req, res) {
 
-        let criterio = { "_id" : gestorBD.mongo.ObjectID(req.params.id) };
+        // Comprobar usuario
+        var token = req.headers['token'] || req.body.token || req.query.token;
+        let user;
+        if (token != null) {
+            // verificar el token
+            app.get('jwt').verify(token, 'secreto', function(err, infoToken) {
+                user = infoToken.usuario;
+            });
+        }
+        let valido;
+        gestorBD.obtenerCanciones({ "_id" : gestorBD.mongo.ObjectID(req.params.id), "autor": user }, function(canciones) {
+            valido = check(canciones.length > 0, "Usted no puede modificar esta canción", res);
+        })
+        if(!valido)
+            return;
+
+        let criterio = { "_id" : gestorBD.mongo.ObjectID(req.params.id)};
 
         let cancion = {}; // Solo los atributos a modificar
-        if ( req.body.nombre != null)
+        // Validaciones
+        if ( req.body.nombre != null && cancion.nombre.length > 0) {
             cancion.nombre = req.body.nombre;
-        if ( req.body.genero != null)
+            if(!check(req.body.nombre.length >= 5, "El nombre debe tener una longitud mayor de 5.", res))
+                return;
+        }
+        if ( req.body.genero != null && cancion.genero.length > 0)
             cancion.genero = req.body.genero;
-        if ( req.body.precio != null)
+
+        if ( req.body.precio != null) {
             cancion.precio = req.body.precio;
+            if(!check(req.body.precio > 0, "El precio debe ser positivo.", res))
+                return;
+        }
+
         gestorBD.modificarCancion(criterio, cancion, function(result) {
             if (result == null) {
                 res.status(500);
                 res.json({
-                    error : "se ha producido un error"
+                    error: "se ha producido un error"
                 })
             } else {
                 res.status(200);
@@ -123,6 +177,16 @@ module.exports = function(app, gestorBD) {
                     });
                 }
             });
+        });
+
+    function check(validation, errorMessage, res) {
+        if (!validation) {
+            res.status(500);
+            res.json({
+                error: errorMessage
+            });
+            return false;
         }
-    );
+        return true;
+    }
 }
